@@ -2,6 +2,7 @@ require 'net/http'
 require 'json'
 
 module SearchNicovideo
+  extend self
 
   def uri_string
     'http://search.nicovideo.jp/api/'
@@ -9,6 +10,18 @@ module SearchNicovideo
 
   def uri
     URI.parse(uri_string)
+  end
+
+  def snapshot_uri_string
+    'http://search.nicovideo.jp/api/snapshot/'
+  end
+
+  def snapshot_uri
+    URI.parse(snapshot_uri_string)
+  end
+
+  def watch_uri(s,id)
+    URI.parse("http://#{s}.nicovideo.jp/watch/#{id}")
   end
 
   def search_raw(q)
@@ -24,7 +37,7 @@ module SearchNicovideo
     res = search_raw(q)
     arr = res.body.split("\n").map{|i| JSON.parse(i) }
     hits = arr.select{ |i| i["type"]=="hits" && ! i["endofstream"] }
-    stats = arr.select{ |i| i["type"]=="stat" && ! i["endofstream"] }
+    stats = arr.select{ |i| i["type"]=="stats" && ! i["endofstream"] }
     {
       stats: stats,
       hits: hits
@@ -101,7 +114,7 @@ module SearchNicovideo
 
   class FilterBuilder
     def initialize()
-      @f = { type: "equal", field: "view_counter", value: "10" }
+      @f = { }
     end
 
     def type(t)
