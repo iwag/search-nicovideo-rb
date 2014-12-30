@@ -1,5 +1,6 @@
 require 'net/http'
 require 'json'
+require 'date'
 
 module SearchNicovideo
   extend self
@@ -42,6 +43,11 @@ module SearchNicovideo
       stats: stats,
       hits: hits
     }
+  end
+
+  def parse_time(s)
+    return nil if !s.is_a?(String)
+    DateTime.parse(s + "+9:00").to_time # dirty hack
   end
 
   class QueryBuilder
@@ -123,12 +129,12 @@ module SearchNicovideo
     end
 
     def field(f)
-      @f[:f] = f
+      @f[:field] = f
       self
     end
 
     def value(v)
-      @f[:v] = v
+      @f[:value] = v
       self
     end
 
