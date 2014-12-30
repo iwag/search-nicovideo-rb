@@ -4,7 +4,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ["iwag"]
   spec.email         = ["iwagame@gmail.com"]
   spec.summary       = "http://search.nidovideo.jp/ 's query builder and so."
-  spec.files         = ["search.rb"]
+  spec.files         = ["nicosearch.rb"]
   spec.require_path  = "."
 end
 
