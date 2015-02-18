@@ -25,7 +25,7 @@ module SearchNicovideo
     URI.parse("http://#{s}.nicovideo.jp/watch/#{id}")
   end
 
-  def search_raw(q)
+  def search_raw(q, uri)
     res = nil
     uri = uri()
     Net::HTTP.start(uri.host, uri.port){|http|
@@ -34,8 +34,7 @@ module SearchNicovideo
     res
   end
 
-  def search(q) # q must be JSON
-    res = search_raw(q)
+  def parse_response(res)
     arr = res.body.split("\n").map{|i| JSON.parse(i) }
     hits = arr.select{ |i| i["type"]=="hits" && ! i["endofstream"] }
     stats = arr.select{ |i| i["type"]=="stats" && ! i["endofstream"] }
@@ -43,6 +42,14 @@ module SearchNicovideo
       stats: stats,
       hits: hits
     }
+  end
+
+  def search(q) # q must be JSON
+    parse_response(search_raw(q, uri()))
+  end
+
+  def snapshot(q)
+    parse_response(search_raw(q, snapshot_uri()))
   end
 
   def parse_time(s)
@@ -105,6 +112,7 @@ module SearchNicovideo
     end
 
     def filters(f)
+      raise "#{f} not array" if !f.is_a?(Array)
       @q[:filters] = f
       self
     end
@@ -121,6 +129,21 @@ module SearchNicovideo
   class FilterBuilder
     def initialize()
       @f = { }
+    end
+
+    def range(f, from, to)
+      @f[:type] = "range"
+      @f[:field] = f
+      @f[:from] = from
+      @f[:to] = to
+      self
+    end
+
+    def equal(f, v)
+      @f[:type] = "equal"
+      @f[:field] = f
+      @f[:value] = v
+      self
     end
 
     def type(t)
@@ -149,7 +172,7 @@ module SearchNicovideo
     end
       
     def build
-      @f
+      [@f]
     end
 
     def to_json
