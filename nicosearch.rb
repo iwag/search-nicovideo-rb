@@ -117,6 +117,16 @@ module SearchNicovideo
       self
     end
 
+    def size(i)
+      @q[:size] = i
+      self
+    end
+
+    def from(i)
+      @q[:from] = i
+      self
+    end
+
     def build
       @q
     end
