@@ -5,51 +5,11 @@ require 'date'
 module SearchNicovideo
   extend self
 
-  def uri_string
-    'http://search.nicovideo.jp/api/'
-  end
-
-  def uri
-    URI.parse(uri_string)
-  end
-
-  def snapshot_uri_string
-    'http://search.nicovideo.jp/api/snapshot/'
-  end
-
-  def snapshot_uri
-    URI.parse(snapshot_uri_string)
-  end
-
-  def watch_uri(s,id)
-    URI.parse("http://#{s}.nicovideo.jp/watch/#{id}")
-  end
-
-  def search_raw(q, uri)
-    res = nil
-    uri = uri()
-    Net::HTTP.start(uri.host, uri.port){|http|
-      res = http.post(uri.path, q)
-    }
-    res
-  end
-
-  def parse_response(res)
-    arr = res.body.split("\n").map{|i| JSON.parse(i) }
-    hits = arr.select{ |i| i["type"]=="hits" && ! i["endofstream"] }
-    stats = arr.select{ |i| i["type"]=="stats" && ! i["endofstream"] }
-    {
-      stats: stats,
-      hits: hits
-    }
-  end
-
-  def search(q) # q must be JSON
-    parse_response(search_raw(q, uri()))
-  end
-
-  def snapshot(q)
-    parse_response(search_raw(q, snapshot_uri()))
+  def search(u)
+    encoded = URI.encode(u)
+    uri = URI.parse(encoded)
+    res = Net::HTTP.get(uri)
+    JSON.parse(res)
   end
 
   def parse_time(s)
@@ -58,8 +18,12 @@ module SearchNicovideo
   end
 
   class QueryBuilder
+    def uri_string
+      'http://search.nicovideo.jp/api/v2'
+    end
+
     def  initialize()
-      @q = {query: "test", service: ["video"], search: ["title", "description"], join: ["title"], issuer: "http://github.com/iwag/search-nicovideo-rb", reason:"ma10"}
+      @q = {query: "test", service: ["video"], target: ["title", "description"], fields: ["title"], issuer: "github.com/iwag/search-nicovideo-rb", reason:"ma10"}
     end
 
     def query(s)
@@ -74,16 +38,16 @@ module SearchNicovideo
       self
     end
 
-    def search(s)
+    def targets(s)
       if s.is_a?(Array)
-        @q[:search] = s
+        @q[:targets] = s
       end
       self
     end
 
-    def join(j)
+    def fields(j)
       if j.is_a?(Array)
-        @q[:join] = j
+        @q[:fields] = j
       end
       self
     end
@@ -95,18 +59,9 @@ module SearchNicovideo
       self
     end
 
-    def sort_by(s)
+    def sort(s)
       if s.is_a?(String)
-        @q[:sort_by] = s
-      end
-      self
-    end
-
-    def desc(d)
-      if d==true
-        @q[:order] = "desc"
-      else
-        @q[:order] = "asc"
+        @q[:sort] = s
       end
       self
     end
@@ -128,11 +83,16 @@ module SearchNicovideo
     end
 
     def build
-      @q
-    end
-
-    def to_json
-      @q.to_json
+      uri_string + "/#{@q[:service][0]}/contents/search?" + 
+      [
+        "q=#{@q[:query]}",
+        "targets=#{@q[:targets].join(",")}",
+        "fields=#{@q[:fields].join(",")}",
+        "_sort=#{@q[:sort]}",
+        "_limit=#{@q[:size]}",
+        "_offset=#{@q[:from]}",
+        "_context=#{@q[:issuer]}"
+      ].join("&")
     end
   end
 
@@ -182,11 +142,17 @@ module SearchNicovideo
     end
       
     def build
-      [@f]
-    end
-
-    def to_json
-      @f.to_json
+      q = if @f[:type] == "equal"
+        "filters[#{@f[:field]}][0]=#{@f[:value]}"
+      elsif @f[:type] == "range"
+        [
+          "filters[#{@f[:field]}][gte]=#{@f[:from]}",
+          "filters[#{@f[:field]}][lte]=#{@f[:to]}"
+        ].join("=")
+      else
+        ""
+      end
+      q
     end
   end
 
