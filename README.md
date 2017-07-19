@@ -1,8 +1,9 @@
 # search-nicovideo-rb
 
-[ニコニココンテンツ検索API](http://search.nicovideo.jp/docs/api/search.html) を使うためのライブラリ 
+This is a client library for [niconico search API](http://search.nicovideo.jp/docs/api/snapshot.html).
+[ニコニココンテンツ検索API](http://search.nicovideo.jp/docs/api/snapshot.html) を使うためのライブラリ 
 
-# 使い方
+# How to use
 
 ```ruby
 require 'nicosearch'
