@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9"><![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>Niconico Content Search API Guide</title>
+  <meta name="description" content="niconico のコンテンツを検索するAPIについて解説">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!--[if lt IE 8]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css">
+  <style type="text/css">
+    body {
+      margin: 0 auto;
+      font-size: 16px
+    }
+
+    h1 {
+      font-size: 32px
+    }
+
+    h4,
+    h5,
+    h6 {
+      margin-top: 15px
+    }
+
+    table {
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      padding: 0;
+      color: #333
+    }
+
+    table tr th {
+      background: #f0f0f0 center right no-repeat;
+      padding-right: 15px;
+      color: #036;
+      font-weight: 700
+    }
+
+    table tr th,
+    table tr td {
+      border: 1px solid #ddd;
+      padding: 5px 7px
+    }
+
+    .main-container {
+      margin: 0 auto;
+      margin-top: 60px
+    }
+
+    .sidenav {
+      position: fixed;
+      top: 76px;
+      padding: 10px;
+      background-color: #f2f2f2;
+      border-radius: 5px
+    }
+
+    .sidenav ul {
+      padding: 10px
+    }
+
+    .sidenav li {
+      list-style: none;
+      margin-bottom: 6px
+    }
+
+    .sidenav li.second {
+      padding-left: 1em
+    }
+
+    .footer-links {
+      margin: 10px 0;
+      padding-left: 0
+    }
+
+    .footer-links li {
+      display: inline;
+      padding: 0 2px
+    }
+
+    .footer-links li:first-child {
+      padding-left: 0
+    }
+
+    @media (min-width:768px) {
+      header nav {
+        float: right
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header"><a href="http://www.nicovideo.jp/" class="navbar-brand" target="_blank">niconico</a></div>
+    </div>
+  </header>
+  <div class="row container main-container">
+    <div class="side-container col-md-3 hidden-sm hidden-xs">
+      <nav class="sidenav" role="navigation"></nav>
+    </div>
+    <div class="article-container col-xs-12 col-md-9">
+      <h1>Niconico Search API Reference</h1>
+      <hr>
+      <h2>Introduction</h2>
+      <p>
+		This document explains how to use API to search contents of <a href="http://nicovideo.jp">niconico</a>. Search API allows to return the contents of niconico by specifying keywords and filters.
+      </p>
+      <h3>API Endpoint</h3>
+      <p><a href="http://api.search.nicovideo.jp/api/v2/:service/contents/search">http://api.search.nicovideo.jp/api/v2/:service/contents/search</a></p>
+      <h3>URI parameter</h3>
+      <p>Must set one of the following target services at :service in the endpoint. Sorry, now we don't have an API to search for multiple services at same time.</p>
+      <ul>
+        <li>video <a href="http://www.nicovideo.jp/video_top">video</a></li>
+        <li>live <a href="http://live.nicovideo.jp">live</a></li>
+        <li>illust <a href="http://seiga.nicovideo.jp/illust/">illustation</a></li>
+        <li>manga <a href="http://seiga.nicovideo.jp/manga/">manga(cartoon)</a></li>
+        <li>book <a href="http://seiga.nicovideo.jp/book/">book</a></li>
+        <li>channel <a href="http://ch.nicovideo.jp/">channel(simmilar to community)</a></li>
+        <li>channelarticle <a href="http://ch.nicovideo.jp/portal/blomaga">blog</a></li>
+        <li>news <a href="http://news.nicovideo.jp/">news</a></li>
+        <li>game <a href="http://game.nicovideo.jp/">game</a></li>
+      </ul>
+      <h3>Headers</h3>
+      <p>Specify the following headers as much as possible. It's not complacency, but it's convinient for us to examine requests.</p>
+      <ul>
+        <li>User-Agent: Name of the service or application. Maximum: 40 characters.</li>
+      </ul>
+      <h3>Query parameters</h3>
+      <p>As give some options API, set the following parameters through GET query parameters.</p>
+      <table>
+        <thead>
+          <tr>
+            <th align="left">Parameter</th>
+            <th align="left">Type</th>
+            <th align="left">Optional</th>
+            <th align="left">Default Value</th>
+            <th align="left">An example</th>
+            <th align="left">Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left">q</td>
+            <td align="left">string</td>
+            <td align="left">no</td>
+            <td align="left">-</td>
+            <td align="left">game</td>
+            <td align="left">keyword to search. Please refer to * 1 for details of format.</td>
+          </tr>
+          <tr>
+            <td align="left">targets</td>
+            <td align="left">string</td>
+            <td align="left">no</td>
+            <td align="left">-</td>
+            <td align="left">title,description,tags</td>
+            <td align="left">
+              Field (s) to be searched for (comma separated values). For keyword search, please specify title, description, tags. In the case of tag search (hits content with a tag exactly matching the keyword), please specify tagsExact.
+            </td>
+          </tr>
+          <tr>
+            <td align="left">fields</td>
+            <td align="left">string</td>
+            <td align="left">yes</td>
+            <td align="left">-</td>
+            <td align="left">contentId,title,description,tags</td>
+            <td align="left">
+              Field (s) of the content that you want to include in the response (s), separated by commas. Please refer to * 2 for the field name.
+            </td>
+          </tr>
+          <tr>
+            <td align="left">filters</td>
+            <td align="left">string</td>
+            <td align="left">yes</td>
+            <td align="left">-</td>
+            <td align="left">-</td>
+            <td align="left">
+              Filter search results only to content that matches filter criteria. See * 3 for the filter format.
+            </td>
+          </tr>
+          <tr>
+            <td align="left">_sort</td>
+            <td align="left">string</td>
+            <td align="left">no</td>
+            <td align="left">-</td>
+            <td align="left">-viewCounter</td>
+            <td align="left">
+              Specify the sort order by concatenating the sort direction sign and the field name. Whether the sorting direction is ascending or descending is specified by '+' or '-', otherwise it defaults to '-'. Please refer to * 2 for available fields.
+          </tr>
+          <tr>
+            <td align="left">_offset</td>
+            <td align="left">integer</td>
+            <td align="left">yes</td>
+            <td align="left">0</td>
+            <td align="left">10</td>
+            <td align="left">Offset of returning content. Maximum: 1600</td>
+          </tr>
+          <tr>
+            <td align="left">_limit</td>
+            <td align="left">integer</td>
+            <td align="left">yes</td>
+            <td align="left">10</td>
+            <td align="left">10</td>
+            <td align="left">Maximum number of returned contents. Maximum: 100</td>
+          </tr>
+          <tr>
+            <td align="left">_context</td>
+            <td align="left">string</td>
+            <td align="left">no</td>
+            <td align="left">-</td>
+            <td align="left">apiguide</td>
+            <td align="left">Service or application name. Maximum: 40 characters</td>
+          </tr>
+        </tbody>
+      </table>
+      <h4>＊1 Query string specification</h4>
+      <table>
+        <thead>
+          <tr>
+            <th align="left">Feature</th>
+            <th align="left">Format</th>
+            <th align="left">Example</th>
+            <th align="left">Description</th>
+            <th align="left">Memo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left">AND Search</td>
+            <td align="left">Separate by brank</td>
+            <td align="left">miku vocal</td>
+            <td align="left">Contents indluding &ldquo;miku&rdquo; AND &ldquo;Vocal&quot;</td>
+            <td align="left"></td>
+          </tr>
+          <tr>
+            <td align="left">OR Search</td>
+            <td align="left">ORで区切る</td>
+            <td align="left">miku OR miku</td>
+            <td align="left">Contents indluding &ldquo;miku&rdquo; OR &ldquo;Vocal&quot;</td>
+            <td align="left">Please put a blank before or after OR.</td>
+          </tr>
+          <tr>
+            <td align="left">-</td>
+            <td align="left">-</td>
+            <td align="left">miku OR vocal OR vocaloid</td>
+            <td align="left">Contents indluding &ldquo;miku&rdquo; OR &ldquo;vocal&quot; OR &ldquo;vocaloid&quot;</td>
+            <td align="left"></td>
+          </tr>
+          <tr>
+            <td align="left">AND・OR Search</td>
+            <td align="left">-</td>
+            <td align="left">vocal OR song miku</td>
+            <td align="left">Contents indluding &ldquo;miku&rdquo; OR &ldquo;vocal&quot; AND &ldquo;vocaloid&quot;</td>
+            <td align="left">Write OR search first when combining AND and OR.</td>
+          </tr>
+          <tr>
+            <td align="left">Phrase search</td>
+            <td align="left">Double-quote&quot; で囲む</td>
+            <td align="left">&ldquo;miku vocal&rdquo;</td>
+            <td align="left">Contents including &ldquo;miku vocal&rdquo;</td>
+            <td align="left">By enclosing it with double quotes you can search including whitespace and operators.</td>
+          </tr>
+          <tr>
+            <td align="left">NOT Search</td>
+            <td align="left">Put -(minus) in front of word</td>
+            <td align="left">miku -vocal</td>
+            <td align="left">Content not including vocals including "Miku".</td>
+            <td align="left"></td>
+          </tr>
+          <tr>
+            <td align="left">-</td>
+            <td align="left">-</td>
+            <td align="left">miku - miku</td>
+            <td align="left">Contents including &quot;miku&rdquo; AND &ldquo;-&rdquo; AND &ldquo;vocal&quot;</td>
+            <td align="left">Don't put a space between - and the word.</td>
+          </tr>
+          <tr>
+            <td align="left">-</td>
+            <td align="left">-</td>
+            <td align="left">-vocal</td>
+            <td align="left">Error</td>
+            <td align="left">Can't execute only NOT search</td>
+          </tr>
+        </tbody>
+      </table>
+      <h4>＊2 Field Specification</h4>
+      <p>
+        Some fields does not allow to use in certain service. In addition, you may get null value for some reasons such as a content doesn't have some fields.
+      <table>
+        <thead>
+          <tr>
+            <th>Field</th>
+            <th>Description</th>
+            <th>Type</th>
+            <th>Enable to get by `fields`</th>
+            <th>Enable to set in `sort`</th>
+            <th>Enable to get by `filters`</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>contentId</td>
+            <td>Content ID. Concat after <a href="http://nico.ms/">http://nico.ms/</a> then it becomes the URL to the content.</td>
+            <td>string</td>
+            <td>o</td>
+            <td>-</td>
+            <td>o</td>
+          </tr>
+          <tr>
+            <td>title</td>
+            <td>title</td>
+            <td>string</td>
+            <td>o</td>
+            <td>-</td>
+            <td>-</td>
+          </tr>
+          <tr>
+            <td>description</td>
+            <td>description of the content</td>
+            <td>string</td>
+            <td>o</td>
+            <td>-</td>
+            <td>-</td>
+          </tr>
+          <tr>
+            <td>tags</td>
+            <td>tag(blank separated) attached in the content</td>
+            <td>string</td>
+            <td>o</td>
+            <td>-</td>
+            <td>o</td>
+          </tr>
+          <tr>
+            <td>categoryTags</td>
+            <td>tag of category</td>
+            <td>string</td>
+            <td>o</td>
+            <td>-</td>
+            <td>o</td>
+          </tr>
+          <tr>
+            <td>viewCounter</td>
+            <td>number of view or visit</td>
+            <td>integer</td>
+            <td>o</td>
+            <td>o</td>
+            <td>o</td>
+          </tr>
+          <tr>
+            <td>mylistCounter</td>
+            <td>number of my lists or favorites</td>
+            <td>integer</td>
+            <td>o</td>
+            <td>o</td>
+            <td>o</td>
+          </tr>
+          <tr>
+            <td>commentCounter</td>
+            <td>number of comments</td>
+            <td>integer</td>
+            <td>o</td>
+            <td>o</td>
+            <td>o</td>
+          </tr>
+          <tr>
+            <td>startTime</td>
+            <td>time contents posted / time live broadcast started</td>
+            <td>string (ISO8601)</td>
+            <td>o</td>
+            <td>o</td>
+            <td>o</td>
+          </tr>
+          <tr>
+            <td>thumbnailUrl</td>
+            <td>URL of thumbnail image</td>
+            <td>string</td>
+            <td>-</td>
+            <td>o</td>
+            <td>-</td>
+          </tr>
+          <tr>
+            <td>communityIcon</td>
+            <td>URL of community icon</td>
+            <td>string</td>
+            <td>o</td>
+            <td>-</td>
+            <td>-</td>
+          </tr>
+          <tr>
+            <td>scoreTimeshiftReserved</td>
+            <td>number of timeshift reserved(live only)</td>
+            <td>integer</td>
+            <td>-</td>
+            <td>o</td>
+            <td>-</td>
+          </tr>
+          <tr>
+            <td>liveStatus</td>
+            <td>Broadcast status (past broadcast / live broadcast / scheduled broadcast) (live only)</td>
+            <td>enum(&#39;past&#39;,&#39;onair&#39;,&#39;reserved&#39;)</td>
+            <td>o</td>
+            <td>-</td>
+            <td>o</td>
+          </tr>
+        </tbody>
+      </table>
+      <h4>＊3 filter specification</h4>
+      <p>If you want to filter only content whose field field 0 matches one of val 0 or val 1 ... values, specify the URL parameter as follows:</p>
+      <div class="highlight"><pre><code class="text language-text" data-lang="text">filters[field0][0]=val0&amp;filters[field0][1]=val1
+</code></pre></div>
+      <p>To filter only contents whose field field 1 matches the range of val 0 to val 1 (not including val 0 and val 1), specify the URL parameter as follows.</p>
+      <div class="highlight"><pre><code class="text language-text" data-lang="text"> filters[field1][gt]=val0&amp;filters[field1][lt]=val1
+</code></pre></div>
+      <p>If you want to include range values ​​also use gte and lte.</p>
+      <p>You can use integer or string fields by filters. For details, refer to the field specification of * 2.</p>
+      <p>Example:</p>
+      <ul>
+        <li>Filter by 1 million view</li>
+      </ul>
+      <div class="highlight"><pre><code class="text language-text" data-lang="text">filters[viewCounter][0]=1000000
+</code></pre></div>
+      <ul>
+        <li>Filter by number of 1000 mylists or over 1000 comments
+</li>
+      </ul>
+      <div class="highlight"><pre><code class="text language-text" data-lang="text">filters[mylistCounter][gte]=1000&amp;filters[commentCounter][gte]=1000
+</code></pre></div>
+      <ul>
+        <li>Filter by posting in 2014</li>
+      </ul>
+      <div class="highlight"><pre><code class="text language-text" data-lang="text">filters[startTime][gte]=2014-01-01T00:00:00+09:00&amp;filters[startTime][lt]=2015-01-01T00:00:00+09:00
+</code></pre></div>
+      <ul>
+        <li>Filter category tags for games</li>
+      </ul>
+      <div class="highlight"><pre><code class="text language-text" data-lang="text">filters[categoryTags][0]=GAME
+</code></pre></div>
+      <ul>
+        <li>Filter lives on air only</li>
+      </ul>
+      <div class="highlight"><pre><code class="text language-text" data-lang="text">filters[liveStatus][0]=onair
+</code></pre></div>
+      <hr>
+      <h2>Response</h2>
+      <p>Return the following JSON</p>
+      <h3>Regular</h3>
+      <table>
+        <thead>
+          <tr>
+            <th align="left">Field</th>
+            <th align="left">Type</th>
+            <th align="left">Example</th>
+            <th align="left">Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left">meta</td>
+            <td align="left">object</td>
+            <td align="left">-</td>
+            <td align="left">Meta info of response</td>
+          </tr>
+          <tr>
+            <td align="left">meta.status</td>
+            <td align="left">integer</td>
+            <td align="left">200</td>
+            <td align="left">HTTP Status (success)</td>
+          </tr>
+          <tr>
+            <td align="left">meta.id</td>
+            <td align="left">string</td>
+            <td align="left">54fbd5ff-df0c-42fd-8ddf-f64f73ad21b2</td>
+            <td align="left">Request ID</td>
+          </tr>
+          <tr>
+            <td align="left">meta.totalCount</td>
+            <td align="left">integer</td>
+            <td align="left">12673</td>
+            <td align="left">Number of Hit contents</td>
+          </tr>
+          <tr>
+            <td align="left">data</td>
+            <td align="left">array</td>
+            <td align="left">-</td>
+            <td align="left">Hit the content. The elements depend on field parameter</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>例</p>
+      <div class="highlight"><pre><code class="json language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&quot;meta&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;status&quot;</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span>
+    <span class="nt">&quot;totalCount&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="s2">&quot;54fbd5ff-df0c-42fd-8ddf-f64f73ad21b2&quot;</span>
+  <span class="p">},</span>
+  <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nt">&quot;contentId&quot;</span><span class="p">:</span> <span class="s2">&quot;sm9&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;TEST&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;TEST&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;startTime&quot;</span><span class="p">:</span> <span class="s2">&quot;2015-04-31T00:00:00+09:00&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;viewCounter&quot;</span><span class="p">:</span> <span class="mi">1</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+      <h3>Error</h3>
+      <table>
+        <thead>
+          <tr>
+            <th align="left">Field</th>
+            <th align="left">Type</th>
+            <th align="left">Example</th>
+            <th align="left">Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left">meta</td>
+            <td align="left">object</td>
+            <td align="left">-</td>
+            <td align="left">Meta info of response</td>
+          </tr>
+          <tr>
+            <td align="left">meta.status</td>
+            <td align="left">integer</td>
+            <td align="left">400</td>
+            <td align="left">HTTP Status (error)</td>
+          </tr>
+          <tr>
+            <td align="left">meta.errorCode</td>
+            <td align="left">string</td>
+            <td align="left">QUERY_PARSE_ERROR</td>
+            <td align="left">Error code</td>
+          </tr>
+          <tr>
+            <td align="left">meta.errorMessage</td>
+            <td align="left">string</td>
+            <td align="left">query parse error</td>
+            <td align="left">Detail of error</td>
+          </tr>
+        </tbody>
+      </table>
+      <h4>status: 400</h4>
+      <p>Invalid parameters</p>
+      <div class="highlight"><pre><code class="json language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&quot;meta&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;status&quot;</span><span class="p">:</span> <span class="mi">400</span><span class="p">,</span>
+    <span class="nt">&quot;errorCode&quot;</span><span class="p">:</span> <span class="s2">&quot;QUERY_PARSE_ERROR&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;errorMessage&quot;</span><span class="p">:</span> <span class="s2">&quot;query parse error&quot;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+      <h4>status: 500</h4>
+      <p>Internal error of search servers</p>
+      <div class="highlight"><pre><code class="json language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&quot;meta&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;status&quot;</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span>
+    <span class="nt">&quot;errorCode&quot;</span><span class="p">:</span> <span class="s2">&quot;INTERNAL_SERVER_ERROR&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;errorMessage&quot;</span><span class="p">:</span> <span class="s2">&quot;please retry later.&quot;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+      <h4>status: 503</h4>
+      <p>Search service is in middle of maintenance</p>
+      <div class="highlight"><pre><code class="json language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&quot;meta&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;status&quot;</span><span class="p">:</span> <span class="mi">503</span><span class="p">,</span>
+    <span class="nt">&quot;errorCode&quot;</span><span class="p">:</span> <span class="s2">&quot;MAINTENANCE&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;errorMessage&quot;</span><span class="p">:</span> <span class="s2">&quot;please retry later.&quot;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+      <h2> Sample query and execution </h2>
+      <p> Show the specified query for the following condigions</p>
+      <ul>
+        <li>includes "MIKU"</li>
+        <li>view counter is more than 10000</li>
+        <li>information to need to get content_id,title and view counter</li>
+        <li>sorts ordered by view_counter asc and limits 3 items</li>
+      </ul>
+      <h4>URL</h4>
+      <ul>
+        <li><code>+</code> in an example requires to be url encoded by <code>%2B</code></li>
+      </ul>
+      <div class="highlight"><pre><code class="text language-text" data-lang="text">http://api.search.nicovideo.jp/api/v2/video/contents/search?q=%E5%88%9D%E9%9F%B3%E3%83%9F%E3%82%AF&amp;targets=title&amp;fields=contentId,title,viewCounter&amp;filters[viewCounter][gte]=10000&amp;_sort=-viewCounter&amp;_offset=0&amp;_limit=3&amp;_context=apiguide
+</code></pre></div>
+      <h4>An example output by using curl</h4>
+      <div class="highlight"><pre><code class="text language-text" data-lang="text">curl -A &#39;apiguide application&#39; &#39;http://api.search.nicovideo.jp/api/v2/video/contents/search?targets=title&amp;fields=contentId,title,viewCounter&amp;_sort=-viewCounter&amp;_offset=0&amp;_limit=3&amp;_context=apiguide&#39; --data-urlencode &quot;q=MIKU &quot; --data-urlencode &quot;filters[viewCounter][gte]=10000&quot;
+</code></pre></div>
+      <h4>A response</h4>
+      <div class="highlight"><pre><code class="json language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&quot;meta&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;status&quot;</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span>
+    <span class="nt">&quot;totalCount&quot;</span><span class="p">:</span> <span class="mi">12673</span><span class="p">,</span>
+    <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;54fbd5ff-df0c-42fd-8ddf-f64f73ad21b2&quot;</span>
+  <span class="p">},</span>
+  <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nt">&quot;contentId&quot;</span><span class="p">:</span> <span class="s2">&quot;sm1097445&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;【初音ミク】みくみくにしてあげる♪【してやんよ】&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;viewCounter&quot;</span><span class="p">:</span> <span class="mi">11904784</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="nt">&quot;contentId&quot;</span><span class="p">:</span> <span class="s2">&quot;sm1715919&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;初音ミク　が　オリジナル曲を歌ってくれたよ「メルト」&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;viewCounter&quot;</span><span class="p">:</span> <span class="mi">10230124</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="nt">&quot;contentId&quot;</span><span class="p">:</span> <span class="s2">&quot;sm15630734&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;『初音ミク』千本桜『オリジナル曲PV』&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;viewCounter&quot;</span><span class="p">:</span> <span class="mi">9557201</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+      <hr>
+</code></pre></div>
+      <h2>Changelog</h2>
+      <ul>
+        <li>2015/11/19 First release</li>
+        <li>2016/02/24 Specification change of AND · OR search, correction of error of date format</li>
+        <li>2016/12/07 Description of query parameters of q and error correction of table of q grammar</li>
+        <li>2017/05/29 Add game and license_search to search target service</li>
+      </ul>
+      <hr>
+      <footer>
+        <p>©DWANGO Co., Ltd.</p>
+      </footer>
+    </div>
+  </div>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+  <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+  <script>
+    (function() {
+      var a;
+      a = "", $("h2,h3").each(function(b) {
+        var c, d;
+        return d = "toc" + b, $(this).attr("id", d), c = "H2" === $(this).get(0).tagName ? "first" : "second", a += "<li class=" + c + "><a href='#" + d + "'>" + $(this).text() + "</a></li>"
+      }), $("h2,h3").length && $("nav.sidenav").append("<ul id='toc'>" + a + "</ul>"), $("nav.sidenav a[href^='#']").click(function() {
+        var a, b;
+        return a = $(this).attr("href"), b = $(a).offset().top - 64, $("html,body").animate({
+          scrollTop: b
+        }), !1
+      })
+    }).call(this);
+  </script>
+  <script>
+    (function(i, s, o, g, r, a, m) {
+      i['GoogleAnalyticsObject'] = r;
+      i[r] = i[r] || function() {
+        (i[r].q = i[r].q || []).push(arguments)
+      }, i[r].l = 1 * new Date();
+      a = s.createElement(o),
+        m = s.getElementsByTagName(o)[0];
+      a.async = 1;
+      a.src = g;
+      m.parentNode.insertBefore(a, m)
+    })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+    ga('create', 'UA-33448555-4', 'nicovideo.jp', {
+      'sampleRate': 1
+    });
+    ga('send', 'pageview');
+    gase = function(c, a, l) {
+      ga('send', 'event', c, a, l);
+    }
+  </script>
+</body>
+
+</html>
