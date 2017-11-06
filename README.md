@@ -1,8 +1,10 @@
 # search-nicovideo-rb
 
-This is a client library for [niconico search API](http://search.nicovideo.jp/docs/api/snapshot.html) in Ruby.
+This is a ruby client library for niconico search API v2. 
 
-[unofficial API document](./search_api.html) might be helpful.
+## API documentation
+* [unofficial API document(English)](https://iwag.github.io/search-nicovideo-rb/search_api.html)
+* [niconico search API(Jpanase)](http://search.nicovideo.jp/docs/api/snapshot.html)
 
 # How to use
 
